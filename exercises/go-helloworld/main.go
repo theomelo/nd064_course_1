@@ -12,4 +12,5 @@ func helloWorld(w http.ResponseWriter, r *http.Request){
 func main() {
     http.HandleFunc("/", helloWorld)
     http.ListenAndServe(":6111", nil)
+    fmt.Println("Server running on http://localhost:6111")
 }

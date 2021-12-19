@@ -1,0 +1,1 @@
+{"rsync":{"/vagrant":{"type":"rsync","guestpath":"/vagrant","hostpath":"/home/theo/Study/nd064_course_1/exercises","disabled":false,"__vagrantfile":true,"owner":"vagrant","group":"vagrant"}}}

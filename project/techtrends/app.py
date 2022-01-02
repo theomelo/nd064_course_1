@@ -1,11 +1,16 @@
 import sqlite3
+import sys
 
 from flask import Flask, jsonify, json, render_template, request, url_for, redirect, flash
 from werkzeug.exceptions import abort
 
+db_conn_count = 0
+
 # Function to get a database connection.
 # This function connects to database with the name `database.db`
 def get_db_connection():
+    global db_conn_count
+    db_conn_count += 1
     connection = sqlite3.connect('database.db')
     connection.row_factory = sqlite3.Row
     return connection
@@ -18,6 +23,13 @@ def get_post(post_id):
     connection.close()
     return post
 
+# Function to return all posts in the database
+def get_all_posts():
+    connection = get_db_connection()
+    posts = connection.execute('SELECT * FROM posts').fetchall()
+    connection.close()
+    return posts
+
 # Define the Flask application
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'your secret key'
@@ -25,9 +37,8 @@ app.config['SECRET_KEY'] = 'your secret key'
 # Define the main route of the web application 
 @app.route('/')
 def index():
-    connection = get_db_connection()
-    posts = connection.execute('SELECT * FROM posts').fetchall()
-    connection.close()
+    posts = get_all_posts()
+    import pdb; pdb.set_trace()
     return render_template('index.html', posts=posts)
 
 # Define how each individual article is rendered 
@@ -49,7 +60,7 @@ def about():
 @app.route('/create', methods=('GET', 'POST'))
 def create():
     if request.method == 'POST':
-        title = request.form['title']
+        title = request.form['title']   
         content = request.form['content']
 
         if not title:
@@ -65,6 +76,25 @@ def create():
 
     return render_template('create.html')
 
+
+# Application health check
+@app.route('/healthz')
+def health_check():
+    response = { 'result': 'OK - healthy' }
+    return jsonify(response), 200
+
+
+# Application metrics
+@app.route('/metrics')
+def metrics():
+    import pdb; pdb.set_trace()
+    response= {
+        'db_connection_count': db_conn_count,
+        'post_count': len(get_all_posts())
+    }
+    return jsonify(response), 200 
+
+
 # start the application on port 3111
 if __name__ == "__main__":
-   app.run(host='0.0.0.0', port='3111')
+   app.run(host='0.0.0.0', port='3111', debug=True)
